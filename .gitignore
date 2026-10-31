@@ -1,0 +1,23 @@
+# Ambiente virtual e arquivos gerados pelo Python
+.venv/
+__pycache__/
+*.py[cod]
+
+# Arquivos temporários do Jupyter e ferramentas de desenvolvimento
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+.vscode/
+.dist/
+
+# Configurações locais e credenciais
+.env
+.env.*
+!.env.example
+.aws/
+.codex/
+.agents/
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
