@@ -1,0 +1,106 @@
+{
+  "assumptions": [
+    "Cobertura até a observação é premissa didática, não prova independente no CSV.",
+    "Mensalidade, contrato, pagamento, atrasos e indicadores representam o corte por premissa.",
+    "Vazio literal de suporte é zero eventos registrados; informação comprometida permanece ausente."
+  ],
+  "config": {
+    "assume_full_followup": true,
+    "cutoff": "2026-09-21",
+    "horizon_days": 60,
+    "horizon_end": "2026-11-20",
+    "maturity_days": 60,
+    "observation": "2026-11-21"
+  },
+  "counts": {
+    "canonical": 4990,
+    "duplicata_exata": 20,
+    "input_rows": 5020,
+    "main": 4976,
+    "new_customers": 14,
+    "novos": 14,
+    "principal": 4976,
+    "segregado": 10
+  },
+  "files": {
+    "audit_issues.csv": "482181cc11674fc9f5dad24659f62bf0f29e1a38d8305fab3ce549c5fe8bdfd0",
+    "audit_rows.csv": "33e8750d220fd735f6978570dfe286ef1a8d80523ae778b4e1cac4956bf9314f",
+    "audit_support_events.csv": "fb239069aa6b17070119a14ebb3df9321cc88f8f8c2d1bf3d5e78fe02b72129e",
+    "churn_canonical.csv": "b1bd9870349d7554f25051fe3abe4461c5722be927145892d4e706795eadaa67",
+    "churn_main.csv": "0d12683e474bba2b59a6117e9cc8df3377e39bb46dc0f4b38823cd93224f634d",
+    "churn_new_customers.csv": "e5d80c52ea052946a72f745db58fc697cc63622bbe81030e43be25131fe87bc8"
+  },
+  "implementation_sha256": "74e4be5e6cee5d7f8d4042ff30de5fbae6c2f7e2e117bc96f370baa8f86b09fa",
+  "include_target": true,
+  "issues": {
+    "cancellation_before_acquisition": {
+      "affected_rows": 10,
+      "occurrences": 10
+    },
+    "category_standardized": {
+      "affected_rows": 168,
+      "occurrences": 170
+    },
+    "empty_support": {
+      "affected_rows": 1047,
+      "occurrences": 1047
+    },
+    "exact_duplicate": {
+      "affected_rows": 20,
+      "occurrences": 20
+    },
+    "missing_category": {
+      "affected_rows": 45,
+      "occurrences": 45
+    },
+    "missing_numeric": {
+      "affected_rows": 188,
+      "occurrences": 254
+    },
+    "numeric_domain_violation": {
+      "affected_rows": 20,
+      "occurrences": 20
+    },
+    "support_before_acquisition": {
+      "affected_rows": 33,
+      "occurrences": 52
+    }
+  },
+  "missing_canonical": {
+    "atrasos_6m": 43,
+    "chamados_30d": 33,
+    "chamados_60d": 33,
+    "chamados_90d": 33,
+    "debito_automatico": 0,
+    "fibra_optica": 0,
+    "forma_pagamento": 20,
+    "mensalidade_rs": 132,
+    "tempo_cliente_meses": 0,
+    "tipo_contrato": 25
+  },
+  "provenance": {
+    "atrasos_6m": "atrasos_6m na fotografia do corte, com domínio validado; violação=NA.",
+    "chamados_30d": "Contagem em (corte-30 dias, corte], com data >= aquisição; vazio literal=0, histórico comprometido=NA.",
+    "chamados_60d": "Contagem em (corte-60 dias, corte], com data >= aquisição; vazio literal=0, histórico comprometido=NA.",
+    "chamados_90d": "Contagem em (corte-90 dias, corte], com data >= aquisição; vazio literal=0, histórico comprometido=NA.",
+    "churn": "Cancelamento em (corte, fim_horizonte] conforme config.horizon_days; zero somente com desfecho suficientemente observado; não é preditor.",
+    "debito_automatico": "debito_automatico na fotografia do corte, com domínio validado; violação=NA.",
+    "fibra_optica": "fibra_optica na fotografia do corte, com domínio validado; violação=NA.",
+    "forma_pagamento": "Mapeamento explícito de forma_pagamento; desconhecido=NA, sem ajuste estatístico.",
+    "mensalidade_rs": "mensalidade_rs na fotografia do corte, com domínio validado; violação=NA.",
+    "tempo_cliente_meses": "Meses completos de calendário entre aquisição válida e corte; não divide dias por 30.",
+    "tipo_contrato": "Mapeamento explícito de tipo_contrato; desconhecido=NA, sem ajuste estatístico.",
+    "trace": "source_rows remete às linhas originais de audit_rows.csv; eventos e problemas têm source_row, começando em 2."
+  },
+  "runtime": {
+    "numpy": "2.2.6",
+    "pandas": "2.3.3"
+  },
+  "schema_version": 1,
+  "source_sha256": "4f5d117bf1629be9c9c9d8d05617359708eeec9a0358f6c8925db6d02d08f8b5",
+  "source_table_sha256": "6b55409a98bf0447a3e30d1b263052c3e039131c59afbdacd77d527dae54cc29",
+  "target_counts": {
+    "0": 3218,
+    "1": 1772
+  }
+}

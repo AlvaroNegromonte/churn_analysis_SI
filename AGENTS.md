@@ -30,3 +30,12 @@
 - Quando o pré-processamento for autorizado, implemente-o modularmente, independente da execução manual do notebook.
 - Separe treino e teste antes de ajustar transformações que aprendem parâmetros; ajuste exclusivamente no treino e use `transform` no teste, com pipelines. Considere avaliação temporal e sobreposição de clientes quando aplicável.
 - Recall será a métrica principal, acompanhado de falsos positivos, custos de intervenção e capacidade operacional. Não treine modelos antes de autorização.
+
+## Segunda etapa: preparação autorizada e implementada
+
+- O usuário autorizou o tratamento e pré-processamento modular. Preserve o notebook finalizado como histórico da EDA; não o reimplemente para executar a preparação.
+- `scripts/preprocessing.py` coordena o Nível A determinístico; `scripts/ml_preprocessing.py` fornece componentes não ajustados do Nível B. Mantenha esses contratos separados e não faça fit na preparação global.
+- Duplicatas exatas são removidas só na visão processada. Conflitos de identificador e datas essenciais inutilizáveis são segregados com auditoria. Violações numéricas e categorias desconhecidas viram ausências documentadas; não invente correções.
+- As decisões e a comparação com os repositórios de referência estão em `docs/preprocessing_decisions.md`. Na branch de churn consultada (`8eb2af1`), `scripts/preprocessing.py` estava vazio; não atribua ao grupo um pipeline modular concluído.
+- As saídas ficam em `data/processed/`. Toda linha de entrada deve ter destino auditado e os atributos devem manter proveniência. Não confunda a base canônica com uma matriz de ML já ajustada.
+- Testes: `PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 .venv/bin/python -m pytest tests/test_preprocessing.py -q`. A variável evita plugins ROS externos; não instale dependências ROS para este projeto.
