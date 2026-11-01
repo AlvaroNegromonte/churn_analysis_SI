@@ -90,9 +90,4 @@ As análises são realizadas em memória, sem sobrescrever a base original. Nest
 8. Investigações complementares justificadas pelos resultados — implementada.
 9. Síntese e encaminhamentos para o pré-processamento — implementada.
 
-## Referências secundárias de organização e análise
 
-- [CIN0024 — Churn Analysis System, branch feature/churn-eda-preprocessing](https://github.com/llucasEmanuel/CIN0024-churn-analysis-system/tree/feature/churn-eda-preprocessing).
-- [Projeto Lígia — Grupo 10](https://github.com/victoriapessoabm/PS_Ligia_Grupo_10).
-
-Essas referências orientam apenas a estrutura do trabalho; em caso de dúvida metodológica, prevalecem as definições das aulas fornecidas no projeto. As interpretações do notebook são baseadas no arquivo local; resultados e regras dos outros projetos não são assumidos como válidos para esta base.
