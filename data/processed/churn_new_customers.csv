@@ -1,0 +1,15 @@
+id_cliente,data_corte,data_aquisicao_cliente,data_ocorrencia_churn,tempo_cliente_dias,coorte,churn,status_suporte,exposicao_completa_30d,exposicao_completa_60d,exposicao_completa_90d,source_rows,tempo_cliente_meses,mensalidade_rs,atrasos_6m,chamados_30d,chamados_60d,chamados_90d,tipo_contrato,forma_pagamento,fibra_optica,debito_automatico
+C0158,2026-09-21,2026-08-21,2026-10-12,31,novos,1,registrado,True,False,False,[159],1,54.58,1,1,1,1,Mensal,Cartão,0,0
+C0988,2026-09-21,2026-08-21,,31,novos,0,sem_chamados,True,False,False,[989],1,71.73,2,0,0,0,Mensal,Boleto,0,0
+C1678,2026-09-21,2026-08-21,2026-10-07,31,novos,1,cronologia_inconsistente,True,False,False,[1679],1,95.02,1,,,,Anual,Cartão,1,1
+C1748,2026-09-21,2026-08-21,2026-11-16,31,novos,1,cronologia_inconsistente,True,False,False,[1749],1,103.94,2,,,,Mensal,Boleto,1,1
+C1913,2026-09-21,2026-08-21,2026-10-16,31,novos,1,registrado,True,False,False,[1914],1,61.62,1,4,4,4,Mensal,Boleto,0,0
+C2217,2026-09-21,2026-08-21,2026-10-13,31,novos,1,cronologia_inconsistente,True,False,False,[2218],1,84.63,2,,,,Mensal,Cartão,1,0
+C2234,2026-09-21,2026-08-21,,31,novos,0,cronologia_inconsistente,True,False,False,[2235],1,88.92,0,,,,Mensal,Boleto,0,1
+C2322,2026-09-21,2026-08-21,,31,novos,0,cronologia_inconsistente,True,False,False,[2323],1,86.06,1,,,,Anual,Boleto,1,1
+C2329,2026-09-21,2026-08-21,2026-11-09,31,novos,1,cronologia_inconsistente,True,False,False,[2330],1,98.53,3,,,,Bienal,Cartão,1,1
+C3429,2026-09-21,2026-08-21,2026-10-22,31,novos,1,sem_chamados,True,False,False,[3430],1,70.6,1,0,0,0,Mensal,Cartão,0,0
+C3564,2026-09-21,2026-08-21,,31,novos,0,cronologia_inconsistente,True,False,False,[3565],1,95.59,0,,,,Bienal,Cartão,1,0
+C3695,2026-09-21,2026-08-21,2026-10-02,31,novos,1,cronologia_inconsistente,True,False,False,[3696],1,81.91,1,,,,Mensal,Boleto,1,1
+C4031,2026-09-21,2026-08-21,2026-10-03,31,novos,1,cronologia_inconsistente,True,False,False,[4032],1,61.79,2,,,,Mensal,Cartão,0,0
+C4573,2026-09-21,2026-08-21,,31,novos,0,cronologia_inconsistente,True,False,False,[4574],1,102.98,1,,,,Mensal,Cartão,1,1

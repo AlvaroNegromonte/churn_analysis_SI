@@ -1,8 +1,33 @@
-# Análise exploratória de churn
+# Análise e preparação de dados de churn
 
 Miniprojeto da disciplina de **Sistemas Inteligentes — CIn/UFPE**, voltado à análise exploratória de uma base de churn. Os resultados orientarão o pré-processamento e projetos futuros com algoritmos supervisionados e não supervisionados.
 
-A EDA está concluída nas Partes 1–9: contexto, inspeção, qualidade, consolidação temporal exploratória, distribuições, alvo, associações, correlações e implicações para as etapas futuras. As derivações ficam em memória, com rastreabilidade. Ainda não há pré-processamento definitivo nem modelos implementados.
+A EDA está concluída nas Partes 1–9 e seu notebook foi preservado como registro da primeira etapa. A segunda etapa implementa preparação determinística e auditável, mais componentes reutilizáveis de ML que devem ser ajustados somente no treino. Nenhum modelo foi treinado.
+
+## Executar o pré-processamento
+
+Utilize a `.venv` existente, na raiz do projeto:
+
+```bash
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m scripts.run_preprocessing
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 .venv/bin/python -m pytest tests/test_preprocessing.py -q
+```
+
+A descoberta automática de plugins é desativada nos testes para evitar interferência dos plugins ROS presentes no ambiente; isso não exige outro ambiente nem dependências ROS. O processamento funciona sem executar ou abrir o notebook. Também pode ser chamado por `scripts/run_preprocessing.py`, com opções `--input` e `--output-dir`.
+
+Os sete arquivos gerados em `data/processed/` incluem as bases canônica (**4.990 clientes**), principal (**4.976**) e novos (**14**), mais auditoria de todas as **5.020 linhas originais**, alterações, eventos e hashes. Reexecuções substituem apenas esses arquivos gerados. O CSV original permanece intacto.
+
+Na base canônica, as **12 mensalidades e 8 contagens de atraso inválidas viram ausências auditadas**, sem eliminar clientes. As 170 ocorrências categóricas equivalentes são padronizadas. Conflitos de identificador são segregados, e os 10 cancelamentos anteriores à aquisição permanecem na auditoria. São preservadas 132 mensalidades, 43 contagens de atraso e 33 históricos de suporte desconhecidos, sem imputação estatística nesta etapa.
+
+Leia [as decisões, a comparação com os projetos de referência, os critérios temporais e o esquema das saídas](docs/preprocessing_decisions.md).
+
+## Dois níveis de preparação
+
+- **Nível A — determinístico:** `scripts/preprocessing.py`, coordenado por `prepare_data()`. Produz uma base com esquema estável e proveniência, categorias canônicas e ausências que dependem de escolhas futuras. Não usa medianas/modas nem escalas aprendidas.
+- **Nível B — aprendido:** `scripts/ml_preprocessing.py`, com `build_ml_preprocessor()`. Retorna pipeline **não ajustado** para imputação, one-hot e escalonamento opcional (`none`, `standard`, `minmax`). Deve receber `fit` somente no treino e `transform` nos demais dados. Não há um pré-processador global ajustado nem partições exportadas nesta entrega.
+
+`select_features()` retorna somente os dez preditores autorizados, sem identificadores, datas de cancelamento, coorte ou alvo, inclusive no uso não supervisionado. `supervised_data()` também extrai e valida `churn`. A base limpa ainda **não é uma matriz numérica ajustada para um algoritmo específico**; há exemplos e limitações no documento de decisões.
 
 ## Referência principal e regras temporais
 
@@ -19,7 +44,7 @@ As Aulas 1 e 2 do professor **Germano Vasconcelos (CIn/UFPE)**, conforme as defi
 
 Na visão exploratória há 5.000 clientes distintos, 4.990 elegíveis, 4.976 na coorte principal e 14 novos. Dez cancelamentos anteriores à aquisição são sinalizados como incompatíveis com o vínculo. Na coorte principal, são 1.763 cancelamentos e 3.213 permanências, com taxa de churn de 35,43%. Todos os 4.990 elegíveis têm desfecho conhecido no horizonte; os casos com cronologia incompatível continuam sem rótulo utilizável.
 
-## Ajustes técnicos da EDA
+## Registro dos ajustes técnicos da EDA
 
 - Os domínios da Aula 2 são critérios de validade: 12 mensalidades, 8 contagens de atraso e 80/90 grafias de contrato/pagamento violam suas regras na visão de 5.000 clientes. Ausência de informação é contabilizada separadamente; nenhuma violação foi corrigida ou removida definitivamente.
 - Os 1.048 campos vazios de suporte consolidados passam a zero. Outros 33 históricos têm cronologia inconsistente e permanecem com contagem desconhecida, sem excluir os clientes.
@@ -33,6 +58,17 @@ Na visão exploratória há 5.000 clientes distintos, 4.990 elegíveis, 4.976 na
 .
 ├── analise_base_churn.ipynb
 ├── base_churn_5000_VF2_aluno.xlsx - Dados_Sinteticos_VF2.csv
+├── scripts/
+│   ├── __init__.py
+│   ├── preprocessing.py
+│   ├── ml_preprocessing.py
+│   └── run_preprocessing.py
+├── tests/
+│   └── test_preprocessing.py
+├── docs/
+│   └── preprocessing_decisions.md
+├── data/
+│   └── processed/              # três bases e quatro arquivos de auditoria
 ├── requirements.txt
 ├── AGENTS.md
 ├── .gitignore
@@ -41,7 +77,7 @@ Na visão exploratória há 5.000 clientes distintos, 4.990 elegíveis, 4.976 na
 
 - `analise_base_churn.ipynb`: roteiro da EDA, análises implementadas, saídas e interpretações.
 - `base_churn_5000_VF2_aluno.xlsx - Dados_Sinteticos_VF2.csv`: arquivo original, preservado. Seu formato real é CSV, apesar de conter `.xlsx` no nome.
-- `requirements.txt`: dependências diretas, nas versões utilizadas na validação inicial.
+- `requirements.txt`: dependências diretas, nas versões validadas, incluindo scikit-learn e pytest para a segunda etapa.
 - `.gitignore`: impede a inclusão do ambiente virtual, arquivos temporários e configurações locais em novos commits.
 
 ## Execução no VS Code
@@ -76,7 +112,7 @@ Assim, a leitura independe do nome do usuário ou da localização em que o proj
 
 A leitura utiliza UTF-8, separador de campos `,` e vírgula decimal. A base contém **5.020 linhas e 10 colunas**. `data_ocorrencia_churn` foi identificada como origem provável da variável-alvo; sua aplicação usa as regras temporais acima e utiliza a cobertura futura confirmada para interpretar os campos de churn vazios.
 
-As análises são realizadas em memória, sem sobrescrever a base original. Nesta etapa, não há imputação, remoção de registros ou outliers, codificação, normalização ou treinamento de modelos.
+Na EDA, as análises foram realizadas em memória, sem sobrescrever a base original. A preparação posterior gera arquivos separados em `data/processed/`, com decisões auditadas. Imputação estatística, codificação e eventual escalonamento são componentes de um pipeline que deverá ser ajustado somente após separar treino/teste; nenhum modelo foi treinado.
 
 ## Roteiro da EDA
 
