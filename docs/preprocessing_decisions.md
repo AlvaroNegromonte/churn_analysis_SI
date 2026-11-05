@@ -1,5 +1,7 @@
 # Decisões de tratamento e pré-processamento
 
+**Atualização da imputação:** este documento descreve a entrega determinística original. A aplicação posterior do Nível B, autorizada pelo usuário, é detalhada em [imputation_decisions.md](imputation_decisions.md). Agora a fábrica usa moda categórica por padrão, admite mediana ou KNN e o comando `scripts.run_imputation` gera partições preenchidas sem modificar as saídas originais. As afirmações abaixo sobre ausência de split ou de ajuste referem-se ao comando determinístico `scripts.run_preprocessing` e à entrega anterior a essa ampliação.
+
 Este documento registra a passagem da EDA para o processamento reutilizável. As Aulas 1 e 2 do professor **Germano Vasconcelos** são a referência principal, conforme as regras fornecidas no projeto. Os PDFs não estão no workspace. O notebook foi lido integralmente, com atenção às Partes 3, 8 e 9, e permanece como registro histórico da EDA, sem alterações nesta etapa.
 
 ## 1. Referências examinadas antes da implementação
@@ -74,7 +76,7 @@ Nenhuma linha é removida por simplesmente conter ausência ou um extremo estat�
 
 ## 5. Saídas, esquema e rastreabilidade
 
-`data/processed/` contém somente saídas determinísticas:
+Os sete arquivos na raiz de `data/processed/` são as saídas determinísticas abaixo. A subpasta `imputation/` contém as visões aprendidas após a divisão treino/teste, documentadas separadamente.
 
 | Arquivo | Conteúdo |
 |---|---|
@@ -96,12 +98,12 @@ Não use apenas `data.drop(columns="churn")` para formar X: a tabela canônica c
 
 ## 6. Nível B e prevenção de vazamento
 
-Não há split ou matriz ajustada exportados nesta entrega. A divisão depende do experimento futuro. Com uma única fotografia, uma opção é split estratificado por churn e semente fixa; com múltiplos cortes, considerar tempo e compartilhamento de clientes. Esse desenho não deve ser escolhido pelo desempenho no teste.
+O comando determinístico não faz split nem ajuste. A aplicação autorizada em `scripts.run_imputation` usa uma divisão estratificada 80/20 e validação interna no treino, descritas em `imputation_decisions.md`. Com múltiplos cortes, será necessário considerar tempo e compartilhamento de clientes. O desenho não deve ser escolhido pelo desempenho no teste.
 
 `build_ml_preprocessor()` devolve pipeline sem ajuste:
 
-- Numéricos: mediana ajustada exclusivamente no treino. Se um atributo numérico/binário estiver totalmente ausente no treino, o ajuste falha com mensagem explícita, em vez de inventar estatística.
-- Categóricos: por padrão, marcador próprio `[ausente]` e `OneHotEncoder(handle_unknown="ignore")`. Isso evita escolher uma categoria válida para um desconhecido. A alternativa `categorical_imputation="most_frequent"` aprende moda somente no treino e recusa colunas de treino inteiramente ausentes, pois não há moda definida.
+- Numéricos: mediana por padrão ou `numeric_imputation="knn"`, ajustados exclusivamente no treino. Se um atributo numérico/binário estiver totalmente ausente no treino, o ajuste falha com mensagem explícita, em vez de inventar estatística.
+- Categóricos: por padrão, `categorical_imputation="most_frequent"` aprende moda somente no treino e recusa colunas inteiramente ausentes, pois não há moda definida. O marcador `[ausente]` permanece como alternativa explícita com `categorical_imputation="constant"`. A codificação usa `OneHotEncoder(handle_unknown="ignore")`.
 - Binários: moda somente no treino; permanecem separados de escalonamento contínuo.
 - Escalonamento: `none` por padrão; `standard` ou `minmax` são alternativas explícitas. Não há pipeline universal imposto a Árvores de Decisão e métodos de distância.
 - `select_features()` usa a mesma lista positiva para uso supervisionado e não supervisionado. `supervised_data()` também valida o alvo; recusa desfechos desconhecidos.
@@ -123,7 +125,7 @@ X_train_ready = preprocessor.fit_transform(X_train)
 X_test_ready = preprocessor.transform(X_test)
 ```
 
-O exemplo não é executado pelo script de preparação, não cria partições neste repositório e não treina classificador. Para agrupamento, usar `select_features(result.canonical)` e escolher uma estratégia de ajuste/avaliação adequada, sem incluir o alvo; não reutilizar um ajuste global do notebook. Em validação cruzada, o pré-processador deverá integrar o pipeline de cada fold/modelo.
+O exemplo não é executado pelo script determinístico e não treina classificador. A execução aplicada do Nível B fica em outro comando, `scripts.run_imputation`. Para agrupamento, usar `select_features(result.canonical)` e escolher uma estratégia de ajuste/avaliação adequada, sem incluir o alvo; não reutilizar um ajuste global do notebook. Em validação cruzada, o pré-processador deverá integrar o pipeline de cada fold/modelo.
 
 Para preparar futuros registros sem informação de cancelamento, `prepare_data(frame, include_target=False)` aceita a ausência dessa coluna, mantém `churn` desconhecido e permite extrair os mesmos dez preditores. A população ativa no corte deve ser fornecida/validada pela origem; a função não comprova sozinha a situação contratual de um cliente sem esse histórico.
 

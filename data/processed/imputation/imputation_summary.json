@@ -1,0 +1,176 @@
+{
+  "before_after": {
+    "atrasos_6m": {
+      "imputed_values": 43,
+      "mean_after": 1.0458917835671342,
+      "mean_before": 1.046290681220942,
+      "median_after": 1.0,
+      "median_before": 1.0,
+      "missing_after": 0,
+      "missing_before": 43
+    },
+    "chamados_30d": {
+      "imputed_values": 33,
+      "mean_after": 0.5831663326653307,
+      "mean_before": 0.5805931006657252,
+      "median_after": 0.0,
+      "median_before": 0.0,
+      "missing_after": 0,
+      "missing_before": 33
+    },
+    "chamados_60d": {
+      "imputed_values": 33,
+      "mean_after": 1.1414829659318637,
+      "mean_before": 1.1373814807343152,
+      "median_after": 1.0,
+      "median_before": 1.0,
+      "missing_after": 0,
+      "missing_before": 33
+    },
+    "chamados_90d": {
+      "imputed_values": 33,
+      "mean_after": 1.716432865731463,
+      "mean_before": 1.711317329029655,
+      "median_after": 1.0,
+      "median_before": 1.0,
+      "missing_after": 0,
+      "missing_before": 33
+    },
+    "debito_automatico": {
+      "imputed_values": 0,
+      "missing_after": 0,
+      "missing_before": 0
+    },
+    "fibra_optica": {
+      "imputed_values": 0,
+      "missing_after": 0,
+      "missing_before": 0
+    },
+    "forma_pagamento": {
+      "imputed_values": 20,
+      "missing_after": 0,
+      "missing_before": 20
+    },
+    "mensalidade_rs": {
+      "imputed_values": 132,
+      "mean_after": 83.40970581162325,
+      "mean_before": 83.3999794153973,
+      "median_after": 86.08,
+      "median_before": 85.92,
+      "missing_after": 0,
+      "missing_before": 132
+    },
+    "tempo_cliente_meses": {
+      "imputed_values": 0,
+      "mean_after": 24.71803607214429,
+      "mean_before": 24.71803607214429,
+      "median_after": 21.0,
+      "median_before": 21.0,
+      "missing_after": 0,
+      "missing_before": 0
+    },
+    "tipo_contrato": {
+      "imputed_values": 25,
+      "missing_after": 0,
+      "missing_before": 25
+    }
+  },
+  "config": {
+    "folds": 3,
+    "mask_fraction": 0.1,
+    "min_relative_improvement": 0.01,
+    "n_neighbors": 5,
+    "random_state": 42,
+    "test_size": 0.2
+  },
+  "counts": {
+    "canonical": 4990,
+    "imputed_cells": 319,
+    "new_customers": 14,
+    "test": 996,
+    "train": 3980
+  },
+  "files": {
+    "churn_imputed.csv": "94eaf31f6f25be315c3b7d660c7510a73b84f198880c00dbeac379bc0c150127",
+    "churn_imputed_new_customers.csv": "a31dd6898afc66788a278c1d5ed26c8916783fbc4cf72c34464420974a54427c",
+    "churn_imputed_test.csv": "5f569d1778d7486f180b6301fe397adecebcdcab9abd4f067daa8e6c9d5d19c8",
+    "churn_imputed_train.csv": "fb296b48ad2c285d7715f4da06aef4c4dd2bb645a35291c86b7ed7eca140ca65",
+    "imputation_audit.csv": "4aa6ec0b941eb55d5b728037cc7453bb1efb94385233ff76bd232395ce8e737b",
+    "imputation_validation.csv": "6ac2bb34d13f0bf039f53be2c67c2205681dff3dfba9e8c71a290fda470336a6",
+    "imputation_validation_masks.csv": "7988eda46d306c9da0177c2e352302d63205ba1e73f5cd8ac0fef26fdaf059a3"
+  },
+  "fit_scope": "Somente treino da coorte principal; seleção por validação interna. Teste e novos recebem apenas transform.",
+  "limitations": [
+    "Mascaramento artificial de valores conhecidos não reproduz necessariamente o mecanismo das ausências reais.",
+    "Estimativas não recuperam valores verdadeiros nem corrigem datas; flags e base canônica preservam a origem.",
+    "KNN usa k=5 por padrão e distância padronizada; não houve busca pelo melhor k nem treinamento de classificador.",
+    "Os 14 novos recebem transform do treino principal; isso não valida um modelo Early Churn.",
+    "Ajustar novamente a imputação dentro de cada fold ao validar modelos futuros; não fazer CV diretamente sobre a visão já imputada com todo o treino externo."
+  ],
+  "policies": {
+    "canonical": "Base canônica mantém NA e sinalizadores; a visão derivada contém estimativas identificadas.",
+    "categorical": "Moda do treino. Empates seguem a ordenação determinística do SimpleImputer.",
+    "counts": "Arredondamento para inteiro mais próximo; empate x,5 para cima. Limites dos domínios aplicados apenas às estimativas.",
+    "numeric": "Mediana ou KNN selecionado no treino; valores observados preservados.",
+    "support": "Apenas contagens ausentes são ajustadas para 30 <= 60 <= 90, respeitando âncoras observadas."
+  },
+  "runtime": {
+    "numpy": "2.2.6",
+    "pandas": "2.3.3",
+    "scikit-learn": "1.7.2"
+  },
+  "schema_version": 1,
+  "selection": {
+    "criterion": "Menor MAE normalizado, com peso igual por atributo/bloco; KNN exige melhoria relativa > margem configurada. Empates favorecem mediana.",
+    "fold_scores": [
+      {
+        "fold": 1,
+        "score": 0.751251504282473,
+        "strategy": "median"
+      },
+      {
+        "fold": 1,
+        "score": 0.6835301794399843,
+        "strategy": "knn"
+      },
+      {
+        "fold": 2,
+        "score": 0.86299396490376,
+        "strategy": "median"
+      },
+      {
+        "fold": 2,
+        "score": 0.7732908042356289,
+        "strategy": "knn"
+      },
+      {
+        "fold": 3,
+        "score": 0.7941131069558546,
+        "strategy": "median"
+      },
+      {
+        "fold": 3,
+        "score": 0.6955391537381511,
+        "strategy": "knn"
+      }
+    ],
+    "mean_internal_scores": {
+      "knn": 0.7174533791379214,
+      "median": 0.8027861920473626
+    },
+    "numeric_targets": [
+      "mensalidade_rs",
+      "atrasos_6m",
+      "chamados_30d",
+      "chamados_60d",
+      "chamados_90d"
+    ],
+    "selected_numeric_strategy": "knn",
+    "test_used_for_selection": false
+  },
+  "source_sha256": "4f5d117bf1629be9c9c9d8d05617359708eeec9a0358f6c8925db6d02d08f8b5",
+  "training_categories_modes": {
+    "forma_pagamento": "Boleto",
+    "tipo_contrato": "Mensal"
+  }
+}

@@ -6,12 +6,12 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.compose import ColumnTransformer
-from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, StandardScaler
 from sklearn.utils.validation import check_is_fitted
 
 from .preprocessing import BINARY_FEATURES, CATEGORICAL_FEATURES, FEATURE_COLUMNS, NUMERIC_FEATURES
+from .imputation import CustomerImputer
 
 
 def select_features(data):
@@ -65,34 +65,37 @@ class FeatureSelector(TransformerMixin, BaseEstimator):
         return self.feature_names_in_.copy()
 
 
-def build_ml_preprocessor(*, scaling="none", categorical_imputation="constant"):
+def build_ml_preprocessor(*, scaling="none", categorical_imputation="most_frequent",
+                          numeric_imputation="median", n_neighbors=5):
     """Retorna pipeline sem fit. Árvores: none; métodos de distância: avaliar standard/minmax.
 
     Medianas e modas (quando solicitadas), vocabulário do encoder e escalas são
-    aprendidos exclusivamente no fit. Por padrão, categoria ausente tem um marcador
-    próprio, evitando substituir desconhecidos por uma categoria de negócio válida.
+    aprendidos exclusivamente no fit. Moda categórica é a política padrão autorizada.
+    O marcador constante permanece como alternativa explícita. KNN pode substituir
+    mediana; a escolha deve ocorrer exclusivamente dentro do treino.
     """
     if scaling not in {"none", "standard", "minmax"}:
         raise ValueError("scaling deve ser none, standard ou minmax.")
     if categorical_imputation not in {"constant", "most_frequent"}:
         raise ValueError("Estratégia categórica inválida.")
-    numeric_steps = [("imputer", SimpleImputer(strategy="median", keep_empty_features=True))]
+    if numeric_imputation not in {"median", "knn"}:
+        raise ValueError("numeric_imputation deve ser median ou knn.")
+    numeric_transformer = "passthrough"
     if scaling == "standard":
-        numeric_steps.append(("scaler", StandardScaler()))
+        numeric_transformer = Pipeline([("scaler", StandardScaler())])
     elif scaling == "minmax":
-        numeric_steps.append(("scaler", MinMaxScaler()))
-    categorical_steps = [
-        ("imputer", SimpleImputer(strategy=categorical_imputation, fill_value="[ausente]", keep_empty_features=True)),
-        ("encoder", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
-    ]
+        numeric_transformer = Pipeline([("scaler", MinMaxScaler())])
     columns = ColumnTransformer(
         [
-            ("numeric", Pipeline(numeric_steps), list(NUMERIC_FEATURES)),
-            ("categorical", Pipeline(categorical_steps), list(CATEGORICAL_FEATURES)),
-            ("binary", SimpleImputer(strategy="most_frequent", keep_empty_features=True), list(BINARY_FEATURES)),
+            ("numeric", numeric_transformer, list(NUMERIC_FEATURES)),
+            ("categorical", OneHotEncoder(handle_unknown="ignore", sparse_output=False), list(CATEGORICAL_FEATURES)),
+            ("binary", "passthrough", list(BINARY_FEATURES)),
         ],
         remainder="drop",
         verbose_feature_names_out=True,
     )
     selector = FeatureSelector(require_observed_categories=categorical_imputation == "most_frequent")
-    return Pipeline([("features", selector), ("columns", columns)])
+    imputation = CustomerImputer(numeric_strategy=numeric_imputation,
+                                 categorical_strategy=categorical_imputation,
+                                 n_neighbors=n_neighbors)
+    return Pipeline([("features", selector), ("imputation", imputation), ("columns", columns)])

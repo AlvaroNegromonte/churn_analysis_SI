@@ -1,5 +1,6 @@
 # Ambiente virtual e arquivos gerados pelo Python
 .venv/
+.validation_deps/
 __pycache__/
 *.py[cod]
 

@@ -311,10 +311,10 @@ def test_ml_pipeline_is_unfitted_and_learns_only_from_training(scaling):
         preprocessor.transform(testing)
     fitted = clone(preprocessor).fit(training)
     columns = fitted.named_steps["columns"]
-    imputer = columns.named_transformers_["numeric"].named_steps["imputer"]
+    imputer = fitted.named_steps["imputation"].numeric_imputer_
     fee_position = list(NUMERIC_FEATURES).index("mensalidade_rs")
     assert imputer.statistics_[fee_position] == 30
-    encoded = columns.named_transformers_["categorical"].named_steps["encoder"]
+    encoded = columns.named_transformers_["categorical"]
     assert "Bienal" not in encoded.categories_[0]
     before = imputer.statistics_.copy()
     transformed = fitted.transform(testing)
@@ -353,7 +353,7 @@ def test_undefined_category_mode_is_not_invented():
     with pytest.raises(ValueError, match="Treino sem valores"):
         build_ml_preprocessor(categorical_imputation="most_frequent").fit(training)
     # Marcador constante é uma política distinta, explícita e válida para categoria ausente.
-    assert np.isfinite(build_ml_preprocessor().fit_transform(training)).all()
+    assert np.isfinite(build_ml_preprocessor(categorical_imputation="constant").fit_transform(training)).all()
 
 
 def test_category_mode_is_fitted_only_on_training():
@@ -362,7 +362,7 @@ def test_category_mode_is_fitted_only_on_training():
                         raw_row(id_cliente="C", tipo_contrato="Anual")])
     training = prepare_data(raw).canonical
     fitted = build_ml_preprocessor(categorical_imputation="most_frequent").fit(training)
-    imputer = fitted.named_steps["columns"].named_transformers_["categorical"].named_steps["imputer"]
+    imputer = fitted.named_steps["imputation"].categorical_imputer_
     assert imputer.statistics_[0] == "Mensal"
     incoming = select_features(training.iloc[:1])
     incoming["tipo_contrato"] = np.nan

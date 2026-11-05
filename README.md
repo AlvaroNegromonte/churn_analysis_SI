@@ -2,7 +2,7 @@
 
 Miniprojeto da disciplina de **Sistemas Inteligentes — CIn/UFPE**, voltado à análise exploratória de uma base de churn. Os resultados orientarão o pré-processamento e projetos futuros com algoritmos supervisionados e não supervisionados.
 
-A EDA está concluída nas Partes 1–9 e seu notebook foi preservado como registro da primeira etapa. A segunda etapa implementa preparação determinística e auditável, mais componentes reutilizáveis de ML que devem ser ajustados somente no treino. Nenhum modelo foi treinado.
+A EDA está concluída nas Partes 1–9 e seu notebook foi preservado como registro da primeira etapa. A preparação tem um nível determinístico e componentes aprendidos somente no treino. A etapa de imputação compara mediana e KNN dentro do treino e preenche categóricos por moda em visões separadas. Nenhum classificador de churn ou algoritmo de agrupamento foi treinado.
 
 ## Executar o pré-processamento
 
@@ -25,9 +25,24 @@ Leia [as decisões, a comparação com os projetos de referência, os critérios
 ## Dois níveis de preparação
 
 - **Nível A — determinístico:** `scripts/preprocessing.py`, coordenado por `prepare_data()`. Produz uma base com esquema estável e proveniência, categorias canônicas e ausências que dependem de escolhas futuras. Não usa medianas/modas nem escalas aprendidas.
-- **Nível B — aprendido:** `scripts/ml_preprocessing.py`, com `build_ml_preprocessor()`. Retorna pipeline **não ajustado** para imputação, one-hot e escalonamento opcional (`none`, `standard`, `minmax`). Deve receber `fit` somente no treino e `transform` nos demais dados. Não há um pré-processador global ajustado nem partições exportadas nesta entrega.
+- **Nível B — aprendido:** `scripts/ml_preprocessing.py`, com `build_ml_preprocessor()`. Retorna pipeline **não ajustado**, com mediana ou KNN nos numéricos, moda categórica por padrão, one-hot e escala opcional. O ajuste deve acontecer exclusivamente no treino, inclusive dentro dos folds de validação de modelos futuros.
 
 `select_features()` retorna somente os dez preditores autorizados, sem identificadores, datas de cancelamento, coorte ou alvo, inclusive no uso não supervisionado. `supervised_data()` também extrai e valida `churn`. A base limpa ainda **não é uma matriz numérica ajustada para um algoritmo específico**; há exemplos e limitações no documento de decisões.
+
+## Imputação aplicada, sem modificar a EDA ou a base canônica
+
+```bash
+.venv/bin/python -m scripts.run_imputation
+PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 .venv/bin/python -m pytest tests/test_preprocessing.py tests/test_imputation.py -q
+```
+
+O comando prepara os dados em memória e separa a coorte principal em treino/teste 80/20 estratificado, com semente 42. Compara mediana e KNN (k=5) em três folds internos do treino, ocultando temporariamente valores conhecidos. O teste não participa da escolha. Ambos os métodos usam moda nos categóricos e binários. Os parâmetros finais são ajustados apenas no treino; teste e novos recebem `transform`.
+
+As saídas adicionais ficam em `data/processed/imputation/`: visões preenchidas de treino, teste, novos e de todos os elegíveis, auditoria por célula, métricas de validação, máscaras e relatório JSON. Cada preditor tem uma flag `imputed_*`. Os NA da base canônica continuam representando informação desconhecida; somente a visão derivada contém estimativas. Os dez vínculos segregados não são recuperados por invenção de datas.
+
+O relatório registra o método escolhido e a comparação antes/depois. As contagens estimadas respeitam inteiros, domínios e a ordem 30 ≤ 60 ≤ 90 dias, sem alterar contagens observadas. A escolha por mascaramento artificial é uma evidência exploratória, não prova de recuperação dos valores reais. Leia [o protocolo de imputação](docs/imputation_decisions.md).
+
+Nesta cópia Windows, sem `.venv`, o usuário autorizou uma exceção para validação com o Python já instalado e dependências temporárias em `.validation_deps/`. Essa pasta é ignorada pelo Git. Não foi criado outro ambiente virtual. O procedimento recomendado para o ambiente original continua usando `.venv/bin/python`.
 
 ## Referência principal e regras temporais
 
@@ -62,13 +77,17 @@ Na visão exploratória há 5.000 clientes distintos, 4.990 elegíveis, 4.976 na
 │   ├── __init__.py
 │   ├── preprocessing.py
 │   ├── ml_preprocessing.py
-│   └── run_preprocessing.py
+│   ├── imputation.py
+│   ├── run_preprocessing.py
+│   └── run_imputation.py
 ├── tests/
-│   └── test_preprocessing.py
+│   ├── test_preprocessing.py
+│   └── test_imputation.py
 ├── docs/
-│   └── preprocessing_decisions.md
+│   ├── preprocessing_decisions.md
+│   └── imputation_decisions.md
 ├── data/
-│   └── processed/              # três bases e quatro arquivos de auditoria
+│   └── processed/              # sete arquivos determinísticos e subpasta imputation/
 ├── requirements.txt
 ├── AGENTS.md
 ├── .gitignore
