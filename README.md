@@ -4,6 +4,48 @@ Miniprojeto da disciplina de **Sistemas Inteligentes — CIn/UFPE**, voltado à 
 
 A EDA está concluída nas Partes 1–9 e seu notebook foi preservado como registro da primeira etapa. A preparação tem um nível determinístico e componentes aprendidos somente no treino. A etapa de imputação compara mediana e KNN dentro do treino e preenche categóricos por moda em visões separadas. Nenhum classificador de churn ou algoritmo de agrupamento foi treinado.
 
+## Miniprojeto 2 — Árvores de Decisão e XGBoost
+
+Entregáveis:
+
+1. **Notebook:** [modelagem_churn_ad_xgboost.ipynb](modelagem_churn_ad_xgboost.ipynb), 100% executável (~13 min), com as conclusões na Seção 13.
+2. **Apresentação:** 31 slides divididos entre os 5 integrantes, entregue à parte.
+3. **Base transformada:** `data/processed/modeling/churn_transformed_70_30.csv`, gerada por `python -m scripts.run_modeling` ou pelo notebook. O pré-processamento é ajustado só no treino. A base tem a coluna `partition` (train/test), as flags `imputed_*` e o alvo.
+
+Protocolo:
+
+- Coorte principal do miniprojeto 1 (4.976 clientes, 35,4% de churn).
+- Split 70/30 estratificado com semente 42.
+- Imputação KNN, moda e one-hot dentro do `Pipeline`, reajustados em cada fold da CV 5-fold.
+- Teste usado uma única vez.
+- Hiperparâmetros escolhidos por **PR-AUC**. O recall é garantido pelo **limiar** (meta ≥ 80%), escolhido em previsões *out-of-fold* do treino. Com 35% de churn, F2 premiava o classificador trivial.
+- Referência teórica: aulas *Árvores de Decisão & Random Forests* e *Gradient Boosting* do Prof. Germano Vasconcelos.
+
+| Modelo final (teste, limiar para recall ≥ 80%) | Recall | Precisão | ROC-AUC | PR-AUC |
+|---|---|---|---|---|
+| Árvore pré + pós-poda (51 folhas, limiar 0,243) | 0,854 | 0,465 | 0,751 | 0,604 |
+| XGBoost Optuna + restrições monotônicas (limiar 0,412) | 0,815 | 0,545 | 0,802 | 0,678 |
+
+```bash
+.venv/Scripts/python -m pip install -r requirements.txt          # Windows (Linux/macOS: .venv/bin/python)
+.venv/Scripts/python -m scripts.run_modeling                      # regenera só a base transformada
+.venv/Scripts/python scripts/build_modeling_notebook.py           # regenera o notebook a partir da fonte
+.venv/Scripts/python -m jupyter nbconvert --to notebook --execute --inplace modelagem_churn_ad_xgboost.ipynb
+```
+
+- O código reutilizável fica em `scripts/modeling.py`:
+  - split 70/30;
+  - pipeline com atributos derivados opcionais;
+  - métricas e escolha de limiar;
+  - extração de regras SE-ENTÃO com contagens reais por folha;
+  - exportação da base.
+- Ao executar o notebook, as figuras e tabelas usadas na apresentação são geradas em `reports/`.
+- `scripts/imputation.py` recebeu só uma otimização de desempenho, sem mudança de comportamento:
+  - a checagem 30 ≤ 60 ≤ 90 foi vetorizada;
+  - o ajuste das janelas roda apenas nas linhas com ausência;
+  - o resultado é cerca de 16× mais rápido;
+  - os 95 testes passam.
+
 ## Executar o pré-processamento
 
 Utilize a `.venv` existente, na raiz do projeto:
