@@ -33,10 +33,14 @@ def predictor_frame(data):
             raise ValueError(f"Use dados canônicos: domínio inválido em {column}.")
     for column in CATEGORICAL_FEATURES:
         result[column] = result[column].astype(object).where(result[column].notna(), np.nan)
-    for _, row in result.loc[:, list(SUPPORT_COLUMNS)].iterrows():
-        known = row.dropna().to_numpy()
-        if (np.diff(known) < 0).any():
-            raise ValueError("Contagens observadas de suporte não respeitam 30 <= 60 <= 90 dias.")
+    # Vetorizado: pares conhecidos (i < j) devem respeitar a ordem; equivale a
+    # checar valores consecutivos conhecidos de cada linha (transitividade).
+    support = result.loc[:, list(SUPPORT_COLUMNS)].to_numpy(dtype=float)
+    for i in range(len(SUPPORT_COLUMNS)):
+        for j in range(i + 1, len(SUPPORT_COLUMNS)):
+            both = ~np.isnan(support[:, i]) & ~np.isnan(support[:, j])
+            if (support[both, i] > support[both, j]).any():
+                raise ValueError("Contagens observadas de suporte não respeitam 30 <= 60 <= 90 dias.")
     return result
 
 
@@ -132,7 +136,8 @@ class CustomerImputer(TransformerMixin, BaseEstimator):
                 result.loc[absent, column] = estimates[absent.to_numpy(), position]
         # Limites dados por contagens observadas e por estimativas anteriores.
         # Nenhuma célula observada é alterada para resolver inconsistências.
-        for index in result.index:
+        # Só linhas com alguma contagem ausente podem ser ajustadas (as demais são puladas).
+        for index in result.index[frame.loc[:, list(SUPPORT_COLUMNS)].isna().any(axis=1)]:
             for position, column in enumerate(SUPPORT_COLUMNS):
                 if pd.notna(frame.at[index, column]):
                     continue

@@ -22,3 +22,6 @@ __pycache__/
 # Arquivos do sistema operacional
 .DS_Store
 Thumbs.db
+
+# Cache do pipeline (joblib) e checkpoints do notebook de modelagem
+.cache_pipeline/

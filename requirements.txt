@@ -6,3 +6,9 @@ seaborn==0.13.2
 ipykernel==7.3.0
 scikit-learn==1.7.2
 pytest==9.2.0
+# Miniprojeto 2 (modelagem). Validado também com Python 3.14.3, numpy 2.5.5,
+# scikit-learn 1.9.1 e matplotlib 3.11.2 (as versões acima não têm wheels para 3.14).
+xgboost==3.4.1
+optuna==5.1.0
+nbformat
+nbconvert
